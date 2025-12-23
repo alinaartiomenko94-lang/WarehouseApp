@@ -12,15 +12,20 @@ import java.util.Calendar
 
 class ReturnCreateActivity : AppCompatActivity() {
 
+    private lateinit var etInvoice: TextInputEditText
+    private lateinit var  etDate: TextInputEditText
+    private lateinit var  etContractor: TextInputEditText
+    private lateinit var  btnNext: MaterialButton
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_return_create)
 
-        val etInvoice = findViewById<TextInputEditText>(R.id.etInvoice)
-        val etDate = findViewById<TextInputEditText>(R.id.etDate)
-        val etContracrot = findViewById<TextInputEditText>(R.id.etContractor)
-        val btnNext = findViewById<MaterialButton>(R.id.btnNext)
+        etInvoice = findViewById(R.id.etInvoice)
+        etDate = findViewById(R.id.etDate)
+        etContractor = findViewById(R.id.etContractor)
+        btnNext = findViewById(R.id.btnNext)
 
         //Выбор даты
         etDate.setOnClickListener {
@@ -38,12 +43,45 @@ class ReturnCreateActivity : AppCompatActivity() {
 
         //Переход на экран возврата
         btnNext.setOnClickListener {
-            val intent = Intent(this, ReturnItemsActivity::class.java)
-            intent.putExtra("invoice", etInvoice.text.toString())
-            intent.putExtra("date", etDate.text.toString())
-            intent.putExtra("contractor", etContracrot.text.toString())
+
+            if(!validateCreateReturn()) return@setOnClickListener
+
+            val intent = Intent(this, ReturnItemsActivity::class.java).apply {
+                intent.putExtra("invoice", etInvoice.text.toString().trim())
+                intent.putExtra("date", etDate.text.toString().trim())
+                intent.putExtra("contractor", etContractor.text.toString().trim())
+            }
+
             startActivity(intent)
         }
+    }
+
+    private fun validateCreateReturn(): Boolean {
+
+        val invoice = etInvoice.text?.toString()?.trim().orEmpty()
+        val date = etDate.text?.toString()?.trim().orEmpty()
+        val contractor = etContractor.text?.toString()?.trim().orEmpty()
+
+        if(invoice.isEmpty()) {
+            etInvoice.error = "Введите номер ТТН"
+            etInvoice.requestFocus()
+            return false
+        }
+
+        if(date.isEmpty()) {
+            etDate.error = "Укажите дату ТТН"
+            etDate.requestFocus()
+            return false
+        }
+
+        if(contractor.isEmpty()) {
+            etContractor.error = "Введите контрагента"
+            etContractor.requestFocus()
+            return false
+        }
+
+        return true
+
     }
 
 }

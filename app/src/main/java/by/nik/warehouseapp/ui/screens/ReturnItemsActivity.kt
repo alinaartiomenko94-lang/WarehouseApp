@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -11,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
 import by.nik.warehouseapp.model.ReturnProduct
 import by.nik.warehouseapp.ui.adapter.ReturnProductAdapter
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textview.MaterialTextView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -22,6 +25,9 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     private lateinit var tvTotalItems: MaterialTextView
     private lateinit var tvTotalQty: MaterialTextView
     private lateinit var tvTotalDefect: MaterialTextView
+    private lateinit var tvInvoice: MaterialTextView
+    private lateinit var tvDate: MaterialTextView
+    private lateinit var tvContractor: MaterialTextView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,9 +35,9 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_return_items)
 
-        val tvInvoice = findViewById<MaterialTextView>(R.id.tvInvoice)
-        val tvDate = findViewById<MaterialTextView>(R.id.tvDate)
-        val tvContractor = findViewById<MaterialTextView>(R.id.tvContractor)
+        tvInvoice = findViewById(R.id.tvInvoice)
+        tvDate = findViewById(R.id.tvDate)
+        tvContractor = findViewById(R.id.tvContractor)
 
         tvInvoice.text = intent.getStringExtra("invoice")
         tvDate.text = intent.getStringExtra("date")
@@ -53,6 +59,28 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvTotalItems = findViewById(R.id.tvTotalItems)
         tvTotalQty = findViewById(R.id.tvTotalQty)
         tvTotalDefect = findViewById(R.id.tvTotalDefect)
+
+        val btnConfirm = findViewById<MaterialButton>(R.id.btnConfirm)
+
+        btnConfirm.setOnClickListener {
+            if (products.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    "Список товаров пуст",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            AlertDialog.Builder(this)
+                .setTitle("Подтверждение возврата")
+                .setMessage("Подтвердить возврат на ${products.size} позиций?")
+                .setPositiveButton("Подтвердить") { _, _ ->
+                    confirmReturn()
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
+        }
 
     }
 
@@ -107,7 +135,6 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
             .setNegativeButton("Отмена", null)
             .show()
     }
-
     private fun updateSummary() {
         val totalItems = products.size
         val totalQty = products.sumOf { it.quantity }
@@ -116,6 +143,52 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvTotalItems.text = "Позиций: $totalItems"
         tvTotalQty.text = "Всего: $totalQty"
         tvTotalDefect.text = "Брак: $totalDefect"
+    }
+
+    private fun showConfirmDialog() {
+
+        if (products.isEmpty()) {
+            Toast.makeText(this, "Список товаров пуст", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val totalItems = products.size
+        val totalQty = products.sumOf {it.quantity}
+        val totalDefect = products.sumOf { it.defect }
+
+        val message = """
+        Накладная: ${tvInvoice.text}
+        
+        Позиций: $totalItems
+        Всего: $totalQty
+        Брак: $totalDefect
+        
+        Подтвердить возврат?
+    """.trimIndent()
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Подтверждение возврата")
+            .setMessage(message)
+            .setNegativeButton("Отмена", null)
+            .setPositiveButton("Подтвердить") { _, _ ->
+                confirmReturn()
+            }
+            .show()
+    }
+
+    private fun confirmReturn() {
+        // ПОКА ЗАГЛУШКА
+        Toast.makeText(
+            this,
+            "Возврат подтверждён (пока локально)",
+            Toast.LENGTH_LONG
+        ).show()
+
+        // TODO:
+        // 1. Сформировать объект возврата
+        // 2. Отправить в 1С
+        // 3. Или сохранить офлайн
+        // 4. Закрыть экран
     }
 
 
