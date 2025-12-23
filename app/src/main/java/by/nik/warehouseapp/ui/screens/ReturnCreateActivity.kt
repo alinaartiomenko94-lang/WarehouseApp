@@ -1,5 +1,6 @@
 package by.nik.warehouseapp.ui.screens
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
@@ -46,37 +47,32 @@ class ReturnCreateActivity : AppCompatActivity() {
 
             if(!validateCreateReturn()) return@setOnClickListener
 
-            val intent = Intent(this, ReturnItemsActivity::class.java).apply {
-                intent.putExtra("invoice", etInvoice.text.toString().trim())
-                intent.putExtra("date", etDate.text.toString().trim())
-                intent.putExtra("contractor", etContractor.text.toString().trim())
+            val result = Intent().apply {
+                putExtra("invoice", etInvoice.text.toString().trim())
+                putExtra("date", etDate.text.toString().trim())
+                putExtra("contractor", etContractor.text.toString().trim())
             }
 
-            startActivity(intent)
+            setResult(Activity.RESULT_OK, result)
+            finish()
+
         }
     }
 
     private fun validateCreateReturn(): Boolean {
 
-        val invoice = etInvoice.text?.toString()?.trim().orEmpty()
-        val date = etDate.text?.toString()?.trim().orEmpty()
-        val contractor = etContractor.text?.toString()?.trim().orEmpty()
-
-        if(invoice.isEmpty()) {
+        if(etInvoice.text.isNullOrBlank()) {
             etInvoice.error = "Введите номер ТТН"
-            etInvoice.requestFocus()
             return false
         }
 
-        if(date.isEmpty()) {
-            etDate.error = "Укажите дату ТТН"
-            etDate.requestFocus()
+        if(etDate.text.isNullOrBlank()) {
+            etDate.error="Выберите дату ТТН"
             return false
         }
 
-        if(contractor.isEmpty()) {
-            etContractor.error = "Введите контрагента"
-            etContractor.requestFocus()
+        if(etContractor.text.isNullOrBlank()) {
+            etContractor.error="Введите контрагента"
             return false
         }
 

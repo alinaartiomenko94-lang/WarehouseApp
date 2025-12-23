@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WarehouseApp">
         <activity
-            android:name=".ui.screens.ReturnCreateActivity"
+            android:name=".ui.screens.ReturnListActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,10 +23,15 @@
         <activity
             android:name=".ui.screens.ReturnItemsActivity"
             android:exported="false" />
-        <activity
 
+        <activity
             android:name=".ui.screens.AddProductActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.screens.ReturnCreateActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

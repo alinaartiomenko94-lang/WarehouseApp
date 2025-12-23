@@ -1,10 +1,12 @@
 package by.nik.warehouseapp.ui.screens
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
 import by.nik.warehouseapp.model.ReturnDocument
 import by.nik.warehouseapp.model.ReturnStatus
@@ -13,26 +15,19 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class ReturnListActivity : AppCompatActivity() {
 
+    private val CREATE_RETURN_REQUEST = 101
     private val returns = mutableListOf<ReturnDocument>()
+    private lateinit var adapter: ReturnListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_return_list)
 
-        // заглушка данных
-        returns.add(
-            ReturnDocument(
-                id = 1,
-                invoice = "12345",
-                date = "12.09.2025",
-                contractor = "ООО Ромашка",
-                status = ReturnStatus.CREATED,
-                products = mutableListOf()
-            )
-        )
+        val recyclerView = findViewById<RecyclerView>(R.id.rcReturns)
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val adapter = ReturnListAdapter(returns) { returnDoc ->
+        adapter = ReturnListAdapter(returns) { returnDoc ->
             val intent = Intent(this, ReturnItemsActivity::class.java).apply {
                 putExtra("invoice", returnDoc.invoice)
                 putExtra("date", returnDoc.date)
@@ -41,12 +36,33 @@ class ReturnListActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        val rc = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rcReturns)
-        rc.layoutManager = LinearLayoutManager(this)
-        rc.adapter = adapter
+        recyclerView.adapter = adapter
 
         findViewById<FloatingActionButton>(R.id.fabAddReturn).setOnClickListener {
-            startActivity(Intent(this, ReturnCreateActivity::class.java))
+            val intent = Intent(this, ReturnCreateActivity::class.java)
+            startActivityForResult(intent, CREATE_RETURN_REQUEST)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode == CREATE_RETURN_REQUEST && resultCode == Activity.RESULT_OK) {
+            val invoice = data?.getStringExtra("invoice") ?: return
+            val date = data.getStringExtra("date") ?: return
+            val contractor = data.getStringExtra("contractor") ?: return
+
+            val newReturn = ReturnDocument(
+                id = System.currentTimeMillis(),
+                invoice = invoice,
+                date = date,
+                contractor = contractor,
+                status = ReturnStatus.CREATED,
+                products = mutableListOf()
+            )
+
+            returns.add(0, newReturn)
+            adapter.notifyItemInserted(0)
         }
     }
 }
