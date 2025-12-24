@@ -7,12 +7,16 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import by.nik.warehouseapp.R
+import by.nik.warehouseapp.data.RepositoryProvider
+import by.nik.warehouseapp.model.ReturnDocument
+import by.nik.warehouseapp.model.ReturnStatus
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import java.util.Calendar
 
 class ReturnCreateActivity : AppCompatActivity() {
 
+    private val repo = RepositoryProvider.returnRepository
     private lateinit var etInvoice: TextInputEditText
     private lateinit var  etDate: TextInputEditText
     private lateinit var  etContractor: TextInputEditText
@@ -45,15 +49,20 @@ class ReturnCreateActivity : AppCompatActivity() {
         //Переход на экран возврата
         btnNext.setOnClickListener {
 
-            if(!validateCreateReturn()) return@setOnClickListener
+            val newDoc = ReturnDocument(
+                id = System.currentTimeMillis(),
+                invoice = etInvoice.text.toString().trim(),
+                date = etDate.text.toString().trim(),
+                contractor = etContractor.text.toString().trim(),
+                status = ReturnStatus.CREATED,
+                products = mutableListOf()
+            )
 
-            val result = Intent().apply {
-                putExtra("invoice", etInvoice.text.toString().trim())
-                putExtra("date", etDate.text.toString().trim())
-                putExtra("contractor", etContractor.text.toString().trim())
-            }
+            repo.create(newDoc)
 
-            setResult(Activity.RESULT_OK, result)
+            startActivity(Intent(this, ReturnItemsActivity::class.java).apply {
+                putExtra("returnId", newDoc.id)
+            })
             finish()
 
         }

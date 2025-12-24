@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
+import by.nik.warehouseapp.data.RepositoryProvider
+import by.nik.warehouseapp.model.ReturnDocument
 import by.nik.warehouseapp.model.ReturnProduct
 import by.nik.warehouseapp.ui.adapter.ReturnProductAdapter
 import com.google.android.material.button.MaterialButton
@@ -21,7 +23,8 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
 
     private val ADD_PRODUCT_REQUEST = 100
     private lateinit var adapter: ReturnProductAdapter
-    private val products = mutableListOf<ReturnProduct>()
+    private val repo = RepositoryProvider.returnRepository
+    private lateinit var doc: ReturnDocument
     private lateinit var tvTotalItems: MaterialTextView
     private lateinit var tvTotalQty: MaterialTextView
     private lateinit var tvTotalDefect: MaterialTextView
@@ -35,84 +38,67 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_return_items)
 
+        val returnId = intent.getLongExtra("returnId", -1L)
+        doc = repo.getById(returnId) ?: run { finish(); return }
+
         tvInvoice = findViewById(R.id.tvInvoice)
         tvDate = findViewById(R.id.tvDate)
         tvContractor = findViewById(R.id.tvContractor)
 
-        tvInvoice.text = intent.getStringExtra("invoice")
-        tvDate.text = intent.getStringExtra("date")
-        tvContractor.text = intent.getStringExtra("contractor")
-
-
-        val recyclerView = findViewById<RecyclerView>(R.id.rcProducts)
-
-        adapter = ReturnProductAdapter(products,this)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-        val fabAddProduct = findViewById<FloatingActionButton>(R.id.fabAddProduct)
-        fabAddProduct.setOnClickListener {
-            val intent = Intent(this, AddProductActivity::class.java)
-            startActivityForResult(intent, ADD_PRODUCT_REQUEST)
-        }
+        tvInvoice.text = doc.invoice
+        tvDate.text = doc.date
+        tvContractor.text = doc.contractor
 
         tvTotalItems = findViewById(R.id.tvTotalItems)
         tvTotalQty = findViewById(R.id.tvTotalQty)
         tvTotalDefect = findViewById(R.id.tvTotalDefect)
 
-        val btnConfirm = findViewById<MaterialButton>(R.id.btnConfirm)
+        val recyclerView = findViewById<RecyclerView>(R.id.rcProducts)
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        btnConfirm.setOnClickListener {
-            if (products.isEmpty()) {
-                Toast.makeText(
-                    this,
-                    "Список товаров пуст",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
+        // ВАЖНО: адаптер должен работать с doc.products
+        adapter = ReturnProductAdapter(doc.products, this)
+        recyclerView.adapter = adapter
 
-            AlertDialog.Builder(this)
-                .setTitle("Подтверждение возврата")
-                .setMessage("Подтвердить возврат на ${products.size} позиций?")
-                .setPositiveButton("Подтвердить") { _, _ ->
-                    confirmReturn()
-                }
-                .setNegativeButton("Отмена", null)
-                .show()
+        findViewById<FloatingActionButton>(R.id.fabAddProduct).setOnClickListener {
+            startActivityForResult(Intent(this, AddProductActivity::class.java), ADD_PRODUCT_REQUEST)
         }
 
+        findViewById<MaterialButton>(R.id.btnConfirm).setOnClickListener {
+            showConfirmDialog() // используй один диалог
+        }
+
+        updateSummary()
     }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        if (requestCode == ADD_PRODUCT_REQUEST && resultCode == Activity.RESULT_OK) {
+            val d = data ?: return
 
-        if(requestCode == ADD_PRODUCT_REQUEST && resultCode == Activity.RESULT_OK) {
-            val code = data?.getStringExtra("code") ?: return
-            val qty = data.getStringExtra("qty")?.toIntOrNull() ?: return
-            val defect = data.getStringExtra("defect")?.toIntOrNull() ?: 0
-            val position = data.getIntExtra("position", -1)
+            val code = d.getStringExtra("code") ?: return
+            val qty = d.getStringExtra("qty")?.toIntOrNull() ?: return
+            val defect = d.getStringExtra("defect")?.toIntOrNull() ?: 0
+            val position = d.getIntExtra("position", -1)
 
-            val product = ReturnProduct(
-                code = code,
-                quantity = qty,
-                defect = defect
-            )
+            val product = ReturnProduct(code = code, quantity = qty, defect = defect)
 
-            if(position >= 0) {
-                adapter.updateItem(position, product)
-                updateSummary()
+            if (position >= 0) {
+                repo.updateProduct(doc.id, position, product)
+                adapter.notifyItemChanged(position)
             } else {
-                adapter.addItem(product)
-                updateSummary()
+                repo.addProduct(doc.id, product)
+                adapter.notifyItemInserted(doc.products.size - 1)
             }
 
-
-            // ПОКА просто логика-заглушка
-            // позже добавим в RecyclerView
+            updateSummary()
         }
     }
+
+
+
 
     override fun onProductClick(product: ReturnProduct, position: Int) {
         val intent = Intent(this, AddProductActivity::class.java).apply {
@@ -125,36 +111,39 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     }
 
     override fun onProductDelete(product: ReturnProduct, position: Int) {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Удалить товар")
             .setMessage("Удалить ${product.code}?")
             .setPositiveButton("Удалить") { _, _ ->
-                adapter.removeItem(position)
+                repo.deleteProduct(doc.id, position)
+                adapter.notifyItemRemoved(position)
                 updateSummary()
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
-    private fun updateSummary() {
-        val totalItems = products.size
-        val totalQty = products.sumOf { it.quantity }
-        val totalDefect = products.sumOf { it.defect }
 
-        tvTotalItems.text = "Позиций: $totalItems"
-        tvTotalQty.text = "Всего: $totalQty"
-        tvTotalDefect.text = "Брак: $totalDefect"
+
+
+    private fun updateSummary() {
+        val list = doc.products
+        tvTotalItems.text = "Позиций: ${list.size}"
+        tvTotalQty.text = "Всего: ${list.sumOf { it.quantity }}"
+        tvTotalDefect.text = "Брак: ${list.sumOf { it.defect }}"
     }
+
+
 
     private fun showConfirmDialog() {
 
-        if (products.isEmpty()) {
+        if (doc.products.isEmpty()) {
             Toast.makeText(this, "Список товаров пуст", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val totalItems = products.size
-        val totalQty = products.sumOf {it.quantity}
-        val totalDefect = products.sumOf { it.defect }
+        val totalItems = doc.products.size
+        val totalQty = doc.products.sumOf {it.quantity}
+        val totalDefect = doc.products.sumOf { it.defect }
 
         val message = """
         Накладная: ${tvInvoice.text}

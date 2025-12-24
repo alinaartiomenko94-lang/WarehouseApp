@@ -15,7 +15,7 @@ class ReturnListAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvInvoice: TextView = view.findViewById(R.id.tvInvoice)
-        val tvContracrot: TextView = view.findViewById(R.id.tvContractor)
+        val tvContractor: TextView = view.findViewById(R.id.tvContractor)
         val tvStatus: TextView = view.findViewById(R.id.tvStatus)
     }
 
@@ -29,7 +29,7 @@ class ReturnListAdapter(
         val item = items[position]
 
         holder.tvInvoice.text = "ТТН №${item.invoice}"
-        holder.tvContracrot.text = item.contractor
+        holder.tvContractor.text = item.contractor
         holder.tvStatus.text = item.status.name
 
         holder.itemView.setOnClickListener {
