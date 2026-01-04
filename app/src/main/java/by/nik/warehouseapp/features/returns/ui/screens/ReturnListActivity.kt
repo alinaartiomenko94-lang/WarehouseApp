@@ -1,4 +1,4 @@
-package by.nik.warehouseapp.ui.screens
+package by.nik.warehouseapp.features.returns.ui.screens
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,8 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
 import by.nik.warehouseapp.core.data.RepositoryProvider
 import by.nik.warehouseapp.features.returns.ui.adapter.ReturnListAdapter
-import by.nik.warehouseapp.features.returns.ui.screens.ReturnCreateActivity
-import by.nik.warehouseapp.features.returns.ui.screens.ReturnItemsActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class ReturnListActivity : AppCompatActivity() {
