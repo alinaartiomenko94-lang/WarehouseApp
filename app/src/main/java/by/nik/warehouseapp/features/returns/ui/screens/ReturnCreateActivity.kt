@@ -1,15 +1,14 @@
-package by.nik.warehouseapp.ui.screens
+package by.nik.warehouseapp.features.returns.ui.screens
 
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import by.nik.warehouseapp.R
-import by.nik.warehouseapp.data.RepositoryProvider
-import by.nik.warehouseapp.model.ReturnDocument
-import by.nik.warehouseapp.model.ReturnStatus
+import by.nik.warehouseapp.core.data.RepositoryProvider
+import by.nik.warehouseapp.features.returns.model.ReturnDocument
+import by.nik.warehouseapp.features.returns.model.ReturnStatus
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import java.util.Calendar
@@ -64,6 +63,8 @@ class ReturnCreateActivity : AppCompatActivity() {
                 putExtra("returnId", newDoc.id)
             })
             finish()
+
+            if (!validateCreateReturn()) return@setOnClickListener
 
         }
     }

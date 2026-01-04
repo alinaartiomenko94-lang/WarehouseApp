@@ -1,7 +1,7 @@
-package by.nik.warehouseapp.data
+package by.nik.warehouseapp.features.returns.data
 
-import by.nik.warehouseapp.model.ReturnDocument
-import by.nik.warehouseapp.model.ReturnProduct
+import by.nik.warehouseapp.features.returns.model.ReturnDocument
+import by.nik.warehouseapp.features.returns.model.ReturnProduct
 
 interface ReturnRepository {
 

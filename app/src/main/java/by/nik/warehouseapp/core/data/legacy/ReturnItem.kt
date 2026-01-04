@@ -1,4 +1,4 @@
-package by.nik.warehouseapp.data
+package by.nik.warehouseapp.core.data.legacy
 
 class ReturnItem(
     val productCode: String,

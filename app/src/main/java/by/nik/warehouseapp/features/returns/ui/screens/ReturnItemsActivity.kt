@@ -1,7 +1,5 @@
-package by.nik.warehouseapp.ui.screens
+package by.nik.warehouseapp.features.returns.ui.screens
 
-import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -10,10 +8,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
-import by.nik.warehouseapp.data.RepositoryProvider
-import by.nik.warehouseapp.model.ReturnDocument
-import by.nik.warehouseapp.model.ReturnProduct
-import by.nik.warehouseapp.ui.adapter.ReturnProductAdapter
+import by.nik.warehouseapp.core.data.RepositoryProvider
+import by.nik.warehouseapp.features.returns.model.ReturnDocument
+import by.nik.warehouseapp.features.returns.model.ReturnProduct
+import by.nik.warehouseapp.features.returns.ui.adapter.ReturnProductAdapter
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textview.MaterialTextView
@@ -75,7 +73,7 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == ADD_PRODUCT_REQUEST && resultCode == Activity.RESULT_OK) {
+        if (requestCode == ADD_PRODUCT_REQUEST && resultCode == RESULT_OK) {
             val d = data ?: return
 
             val code = d.getStringExtra("code") ?: return

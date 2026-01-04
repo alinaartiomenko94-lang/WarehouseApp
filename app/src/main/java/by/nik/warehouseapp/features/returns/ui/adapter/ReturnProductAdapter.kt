@@ -1,4 +1,4 @@
-package by.nik.warehouseapp.ui.adapter
+package by.nik.warehouseapp.features.returns.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
-import by.nik.warehouseapp.model.ReturnProduct
+import by.nik.warehouseapp.features.returns.model.ReturnProduct
 
 class ReturnProductAdapter(
     private val items: MutableList<ReturnProduct>,

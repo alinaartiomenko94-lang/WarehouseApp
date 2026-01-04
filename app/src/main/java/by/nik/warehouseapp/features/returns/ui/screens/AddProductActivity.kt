@@ -1,4 +1,4 @@
-package by.nik.warehouseapp.ui.screens
+package by.nik.warehouseapp.features.returns.ui.screens
 
 import android.app.Activity
 import android.content.Intent
@@ -143,7 +143,7 @@ class AddProductActivity : AppCompatActivity() {
                 putExtra("defect", defect)
                 putExtra("position", position)
             }
-            setResult(Activity.RESULT_OK, result)
+            setResult(RESULT_OK, result)
             finish()
         }
 

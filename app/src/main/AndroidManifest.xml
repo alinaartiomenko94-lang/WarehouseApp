@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WarehouseApp">
         <activity
-            android:name=".ui.screens.ReturnListActivity"
+            android:name=".features.returns.ui.screens.ReturnListActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,15 +21,15 @@
         </activity>
 
         <activity
-            android:name=".ui.screens.ReturnItemsActivity"
+            android:name=".features.returns.ui.screens.ReturnItemsActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.screens.AddProductActivity"
+            android:name=".features.returns.ui.screens.AddProductActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.screens.ReturnCreateActivity"
+            android:name=".features.returns.ui.screens.ReturnCreateActivity"
             android:exported="false" />
 
     </application>

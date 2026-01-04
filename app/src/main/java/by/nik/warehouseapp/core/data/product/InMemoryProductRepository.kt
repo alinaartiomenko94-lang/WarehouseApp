@@ -1,7 +1,7 @@
-package by.nik.warehouseapp.data
+package by.nik.warehouseapp.core.data.product
 
 import by.nik.warehouseapp.R
-import by.nik.warehouseapp.model.ProductItem
+import by.nik.warehouseapp.features.returns.model.ProductItem
 
 object InMemoryProductRepository {
 

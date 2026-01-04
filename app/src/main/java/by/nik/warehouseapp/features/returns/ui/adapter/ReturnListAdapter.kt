@@ -1,4 +1,4 @@
-package by.nik.warehouseapp.ui.adapter
+package by.nik.warehouseapp.features.returns.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
-import by.nik.warehouseapp.model.ReturnDocument
+import by.nik.warehouseapp.features.returns.model.ReturnDocument
 
 class ReturnListAdapter(
     private val items: List<ReturnDocument>,

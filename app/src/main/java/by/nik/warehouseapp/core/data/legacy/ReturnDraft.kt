@@ -1,5 +1,6 @@
-package by.nik.warehouseapp.data
+package by.nik.warehouseapp.core.data.legacy
 
+import by.nik.warehouseapp.core.data.legacy.ReturnItem
 import java.time.LocalDate
 
 class ReturnDraft (

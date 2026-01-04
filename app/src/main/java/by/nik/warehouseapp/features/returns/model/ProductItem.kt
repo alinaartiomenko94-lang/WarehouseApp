@@ -1,4 +1,4 @@
-package by.nik.warehouseapp.model
+package by.nik.warehouseapp.features.returns.model
 
 data class ProductItem(
     val id: Long,

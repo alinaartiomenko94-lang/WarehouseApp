@@ -1,6 +1,5 @@
-package by.nik.warehouseapp.ui.screens
+package by.nik.warehouseapp.features.returns.ui.screens
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -8,10 +7,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
-import by.nik.warehouseapp.data.RepositoryProvider
-import by.nik.warehouseapp.model.ReturnDocument
-import by.nik.warehouseapp.model.ReturnStatus
-import by.nik.warehouseapp.ui.adapter.ReturnListAdapter
+import by.nik.warehouseapp.core.data.RepositoryProvider
+import by.nik.warehouseapp.features.returns.model.ReturnDocument
+import by.nik.warehouseapp.features.returns.model.ReturnStatus
+import by.nik.warehouseapp.features.returns.ui.adapter.ReturnListAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class ReturnListActivity : AppCompatActivity() {
@@ -47,7 +46,7 @@ class ReturnListActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(requestCode == CREATE_RETURN_REQUEST && resultCode == Activity.RESULT_OK) {
+        if(requestCode == CREATE_RETURN_REQUEST && resultCode == RESULT_OK) {
             val invoice = data?.getStringExtra("invoice") ?: return
             val date = data.getStringExtra("date") ?: return
             val contractor = data.getStringExtra("contractor") ?: return

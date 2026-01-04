@@ -1,4 +1,4 @@
-package by.nik.warehouseapp.ui.adapter
+package by.nik.warehouseapp.features.returns.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
-import by.nik.warehouseapp.model.ProductItem
+import by.nik.warehouseapp.features.returns.model.ProductItem
 
 class ProductPickAdapter(
     private val items: List<ProductItem>,
