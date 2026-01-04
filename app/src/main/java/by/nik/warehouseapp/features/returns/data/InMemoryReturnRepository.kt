@@ -1,7 +1,9 @@
 package by.nik.warehouseapp.features.returns.data
 
+import by.nik.warehouseapp.core.utils.DateUtils
 import by.nik.warehouseapp.features.returns.model.ReturnDocument
 import by.nik.warehouseapp.features.returns.model.ReturnProduct
+import by.nik.warehouseapp.features.returns.model.ReturnStatus
 
 class InMemoryReturnRepository : ReturnRepository {
 
@@ -31,6 +33,16 @@ class InMemoryReturnRepository : ReturnRepository {
         val doc = getById(returnId) ?: return
         if (position < 0 || position >= doc.products.size) return
         doc.products.removeAt(position)
+    }
+
+    override fun confirmReturn(id: Long) {
+        val doc = getById(id) ?: return
+
+        if (doc.acceptanceDate.isNullOrBlank()) {
+            doc.acceptanceDate = DateUtils.today_ddMMyyyy()
+        }
+
+        doc.status = ReturnStatus.ACCEPTED
     }
 
 }

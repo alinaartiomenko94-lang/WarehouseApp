@@ -23,13 +23,17 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     private lateinit var adapter: ReturnProductAdapter
     private val repo = RepositoryProvider.returnRepository
     private lateinit var doc: ReturnDocument
+
     private lateinit var tvTotalItems: MaterialTextView
     private lateinit var tvTotalQty: MaterialTextView
     private lateinit var tvTotalDefect: MaterialTextView
-    private lateinit var tvInvoice: MaterialTextView
-    private lateinit var tvDate: MaterialTextView
-    private lateinit var tvContractor: MaterialTextView
 
+    private lateinit var tvInvoice: MaterialTextView
+    private lateinit var tvDate: MaterialTextView           // Дата ТТН
+    private lateinit var tvContractor: MaterialTextView
+    private lateinit var tvAcceptanceDate: MaterialTextView // Дата приёмки (НОВОЕ)
+
+    private lateinit var btnConfirm: MaterialButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -43,9 +47,9 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvDate = findViewById(R.id.tvDate)
         tvContractor = findViewById(R.id.tvContractor)
 
-        tvInvoice.text = doc.invoice
-        tvDate.text = doc.date
-        tvContractor.text = doc.contractor
+        // НОВОЕ: TextView для даты приёмки
+        // ⚠️ В layout должен появиться MaterialTextView с id tvAcceptanceDate
+        tvAcceptanceDate = findViewById(R.id.tvAcceptanceDate)
 
         tvTotalItems = findViewById(R.id.tvTotalItems)
         tvTotalQty = findViewById(R.id.tvTotalQty)
@@ -54,7 +58,6 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         val recyclerView = findViewById<RecyclerView>(R.id.rcProducts)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // ВАЖНО: адаптер должен работать с doc.products
         adapter = ReturnProductAdapter(doc.products, this)
         recyclerView.adapter = adapter
 
@@ -62,13 +65,15 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
             startActivityForResult(Intent(this, AddProductActivity::class.java), ADD_PRODUCT_REQUEST)
         }
 
-        findViewById<MaterialButton>(R.id.btnConfirm).setOnClickListener {
-            showConfirmDialog() // используй один диалог
+        btnConfirm = findViewById(R.id.btnConfirm)
+        btnConfirm.setOnClickListener {
+            showConfirmDialog()
         }
 
+        renderHeader()
         updateSummary()
+        updateConfirmButtonState()
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -92,11 +97,9 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
             }
 
             updateSummary()
+            updateConfirmButtonState()
         }
     }
-
-
-
 
     override fun onProductClick(product: ReturnProduct, position: Int) {
         val intent = Intent(this, AddProductActivity::class.java).apply {
@@ -116,12 +119,23 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
                 repo.deleteProduct(doc.id, position)
                 adapter.notifyItemRemoved(position)
                 updateSummary()
+                updateConfirmButtonState()
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
 
+    private fun renderHeader() {
+        // Обновляем doc из репозитория на всякий случай (после confirmReturn)
+        doc = repo.getById(doc.id) ?: return
 
+        tvInvoice.text = doc.invoice
+        tvDate.text = doc.ttnDate
+        tvContractor.text = doc.contractor
+
+        // Дата приёмки появляется только после подтверждения
+        tvAcceptanceDate.text = doc.acceptanceDate ?: "—"
+    }
 
     private fun updateSummary() {
         val list = doc.products
@@ -130,28 +144,31 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvTotalDefect.text = "Брак: ${list.sumOf { it.defect }}"
     }
 
-
+    private fun updateConfirmButtonState() {
+        // Кнопка активна только если есть товары
+        btnConfirm.isEnabled = doc.products.isNotEmpty()
+    }
 
     private fun showConfirmDialog() {
-
         if (doc.products.isEmpty()) {
             Toast.makeText(this, "Список товаров пуст", Toast.LENGTH_SHORT).show()
             return
         }
 
         val totalItems = doc.products.size
-        val totalQty = doc.products.sumOf {it.quantity}
+        val totalQty = doc.products.sumOf { it.quantity }
         val totalDefect = doc.products.sumOf { it.defect }
 
         val message = """
-        Накладная: ${tvInvoice.text}
-        
-        Позиций: $totalItems
-        Всего: $totalQty
-        Брак: $totalDefect
-        
-        Подтвердить возврат?
-    """.trimIndent()
+            ТТН: ${doc.invoice}
+            Дата ТТН: ${doc.ttnDate}
+            
+            Позиций: $totalItems
+            Всего: $totalQty
+            Брак: $totalDefect
+            
+            Подтвердить возврат?
+        """.trimIndent()
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Подтверждение возврата")
@@ -164,19 +181,22 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     }
 
     private fun confirmReturn() {
-        // ПОКА ЗАГЛУШКА
-        Toast.makeText(
-            this,
-            "Возврат подтверждён (пока локально)",
-            Toast.LENGTH_LONG
-        ).show()
+        // ✅ Реальная локальная логика подтверждения:
+        // репозиторий должен:
+        // 1) проверить что товары есть
+        // 2) поставить acceptanceDate = today
+        // 3) status = ACCEPTED
+        repo.confirmReturn(doc.id)
 
-        // TODO:
-        // 1. Сформировать объект возврата
-        // 2. Отправить в 1С
-        // 3. Или сохранить офлайн
-        // 4. Закрыть экран
+        // Перечитываем документ и обновляем шапку
+        renderHeader()
+        updateSummary()
+        updateConfirmButtonState()
+
+        Toast.makeText(this, "Возврат подтверждён (локально)", Toast.LENGTH_LONG).show()
+
+        // Позже тут появится:
+        // - постановка в очередь синка с 1С (SYNC_PENDING)
+        // - или отправка сразу при наличии интернета
     }
-
-
 }

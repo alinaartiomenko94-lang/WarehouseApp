@@ -14,4 +14,6 @@ interface ReturnRepository {
     fun updateProduct(returnId: Long, position: Int, product: ReturnProduct)
     fun deleteProduct(returnId: Long, position: Int)
 
+    fun confirmReturn(id: Long)
+
 }

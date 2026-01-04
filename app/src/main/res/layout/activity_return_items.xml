@@ -59,6 +59,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="—"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Дата приёмки"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvAcceptanceDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="—"/>
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>

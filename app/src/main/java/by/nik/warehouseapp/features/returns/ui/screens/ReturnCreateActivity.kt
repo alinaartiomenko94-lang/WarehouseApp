@@ -48,13 +48,16 @@ class ReturnCreateActivity : AppCompatActivity() {
         //Переход на экран возврата
         btnNext.setOnClickListener {
 
+            if (!validateCreateReturn()) return@setOnClickListener
+
             val newDoc = ReturnDocument(
                 id = System.currentTimeMillis(),
                 invoice = etInvoice.text.toString().trim(),
-                date = etDate.text.toString().trim(),
+                ttnDate = etDate.text.toString().trim(),
                 contractor = etContractor.text.toString().trim(),
                 status = ReturnStatus.CREATED,
-                products = mutableListOf()
+                products = mutableListOf(),
+                acceptanceDate = null
             )
 
             repo.create(newDoc)
@@ -63,8 +66,6 @@ class ReturnCreateActivity : AppCompatActivity() {
                 putExtra("returnId", newDoc.id)
             })
             finish()
-
-            if (!validateCreateReturn()) return@setOnClickListener
 
         }
     }
