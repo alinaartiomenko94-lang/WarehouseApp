@@ -3,19 +3,16 @@ package by.nik.warehouseapp.ui.screens
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.widget.addTextChangedListener
 import by.nik.warehouseapp.R
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import android.view.KeyEvent
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-
-
 
 class AddProductActivity : AppCompatActivity() {
 
@@ -31,15 +28,17 @@ class AddProductActivity : AppCompatActivity() {
         val etCode = findViewById<TextInputEditText>(R.id.etCode)
         val etQty = findViewById<TextInputEditText>(R.id.etQty)
         val etDefect = findViewById<TextInputEditText>(R.id.etDefect)
+
         val btnAdd = findViewById<MaterialButton>(R.id.btnAdd)
+        val fabScan = findViewById<ExtendedFloatingActionButton>(R.id.fabScan)
 
         val position = intent.getIntExtra("position", -1)
 
-        // режим редактирования
+        // Режим редактирования
         if (position >= 0) {
-            etCode.setText(intent.getStringExtra("code"))
-            etQty.setText(intent.getStringExtra("qty"))
-            etDefect.setText(intent.getStringExtra("defect"))
+            etCode.setText(intent.getStringExtra("code").orEmpty())
+            etQty.setText(intent.getStringExtra("qty").orEmpty())
+            etDefect.setText(intent.getStringExtra("defect").orEmpty())
             btnAdd.text = "Сохранить"
         } else {
             btnAdd.text = "Добавить товар"
@@ -52,14 +51,14 @@ class AddProductActivity : AppCompatActivity() {
         }
 
         fun validate(showErrors: Boolean): Boolean {
-            clearErrors()
+            if (showErrors) clearErrors()
 
             val code = etCode.text?.toString()?.trim().orEmpty()
             val qtyText = etQty.text?.toString()?.trim().orEmpty()
             val defectText = etDefect.text?.toString()?.trim().orEmpty()
 
             val qty = qtyText.toIntOrNull()
-            val defect = defectText.toIntOrNull() ?: 0
+            val defect = if (defectText.isEmpty()) 0 else defectText.toIntOrNull()
 
             var ok = true
 
@@ -76,87 +75,80 @@ class AddProductActivity : AppCompatActivity() {
                 if (showErrors) tilQty.error = "Количество должно быть больше 0"
             }
 
-            if (defect < 0) {
+            if (defect == null) {
                 ok = false
-                if (showErrors) tilDefect.error = "Брак не может быть меньше 0"
-            }
-
-            if (qty != null && defect > qty) {
-                ok = false
-                if (showErrors) tilDefect.error = "Брак не может быть больше количества"
+                if (showErrors) tilDefect.error = "Введите число (или оставьте пустым)"
+            } else {
+                if (defect < 0) {
+                    ok = false
+                    if (showErrors) tilDefect.error = "Брак не может быть меньше 0"
+                }
+                if (qty != null && defect > qty) {
+                    ok = false
+                    if (showErrors) tilDefect.error = "Брак не может быть больше количества"
+                }
             }
 
             btnAdd.isEnabled = ok
             return ok
         }
 
-        // Первичная проверка (например, в режиме редактирования)
-        validate(showErrors = false)
+        // Валидация “на лету”
+        etCode.addTextChangedListener { validate(showErrors = false) }
+        etQty.addTextChangedListener { validate(showErrors = false) }
+        etDefect.addTextChangedListener { validate(showErrors = false) }
 
-        // Фокус в код сразу (удобно для ТСД/сканера)
-        etCode.requestFocus()
-        etCode.post {
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(etCode, InputMethodManager.SHOW_IMPLICIT)
-        }
+        // Enter/Next/Done логика для ТСД
+        fun isEnter(event: KeyEvent?) =
+            event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN
 
-// Enter/Next логика для склада
         etCode.setOnEditorActionListener { _, actionId, event ->
-            val isEnter = event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN
-            if (actionId == EditorInfo.IME_ACTION_NEXT || isEnter) {
+            if (actionId == EditorInfo.IME_ACTION_NEXT || isEnter(event)) {
                 etQty.requestFocus()
                 true
             } else false
         }
 
         etQty.setOnEditorActionListener { _, actionId, event ->
-            val isEnter = event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN
-            if (actionId == EditorInfo.IME_ACTION_NEXT || isEnter) {
+            if (actionId == EditorInfo.IME_ACTION_NEXT || isEnter(event)) {
                 etDefect.requestFocus()
                 true
             } else false
         }
 
         etDefect.setOnEditorActionListener { _, actionId, event ->
-            val isEnter = event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN
-            if (actionId == EditorInfo.IME_ACTION_DONE || isEnter) {
-                // Нажимаем кнопку, если всё валидно
+            if (actionId == EditorInfo.IME_ACTION_DONE || isEnter(event)) {
                 btnAdd.performClick()
                 true
             } else false
         }
 
-
-        // Проверка “на лету”
-        etCode.addTextChangedListener { validate(showErrors = false) }
-        etQty.addTextChangedListener { validate(showErrors = false) }
-        etDefect.addTextChangedListener { validate(showErrors = false) }
+        // Кнопка "Скан" — пока заглушка: просто фокус в поле кода
+        fabScan.setOnClickListener {
+            tilCode.error = null
+            etCode.requestFocus()
+            etCode.setSelection(etCode.text?.length ?: 0)
+        }
 
         btnAdd.setOnClickListener {
             if (!validate(showErrors = true)) return@setOnClickListener
 
             val code = etCode.text?.toString()?.trim().orEmpty()
-            val qty = etQty.text?.toString()?.trim().orEmpty()          // уже валидно
-            val defect = etDefect.text?.toString()?.trim().orEmpty()    // может быть пусто
+            val qty = etQty.text?.toString()?.trim().orEmpty()
+            val defect = etDefect.text?.toString()?.trim().orEmpty().ifEmpty { "0" }
 
             val result = Intent().apply {
                 putExtra("code", code)
                 putExtra("qty", qty)
-                putExtra("defect", defect.ifEmpty { "0" })
+                putExtra("defect", defect)
                 putExtra("position", position)
             }
             setResult(Activity.RESULT_OK, result)
             finish()
         }
 
-        val fabScan = findViewById<ExtendedFloatingActionButton>(R.id.fabScan)
-
-        fabScan.setOnClickListener {
-            // Пока "сканер" = быстро подготовить поле для ввода от ТСД/сканера
-            tilCode.error = null
-            etCode.requestFocus()
-            etCode.setSelection(etCode.text?.length ?: 0)
-        }
-
+        // Первичная валидация и фокус (удобно для ТСД)
+        validate(showErrors = false)
+        etCode.requestFocus()
     }
 }
