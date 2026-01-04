@@ -181,22 +181,18 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     }
 
     private fun confirmReturn() {
-        // ✅ Реальная локальная логика подтверждения:
-        // репозиторий должен:
-        // 1) проверить что товары есть
-        // 2) поставить acceptanceDate = today
-        // 3) status = ACCEPTED
-        repo.confirmReturn(doc.id)
+        repo.confirmReturn(doc.id)          // тут ставится acceptanceDate и статус
+        doc = repo.getById(doc.id) ?: doc   // перечитать
 
-        // Перечитываем документ и обновляем шапку
-        renderHeader()
+        // обновить UI
+        tvInvoice.text = doc.invoice
+        tvDate.text = doc.ttnDate
+        tvContractor.text = doc.contractor
+        tvAcceptanceDate?.text = doc.acceptanceDate ?: "—"
+
         updateSummary()
-        updateConfirmButtonState()
 
         Toast.makeText(this, "Возврат подтверждён (локально)", Toast.LENGTH_LONG).show()
-
-        // Позже тут появится:
-        // - постановка в очередь синка с 1С (SYNC_PENDING)
-        // - или отправка сразу при наличии интернета
     }
+
 }
