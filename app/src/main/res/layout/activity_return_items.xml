@@ -26,55 +26,73 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Накладная"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tvInvoice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="—"/>
+                android:text="—"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingVertical="4dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Дата ТТН"
                 android:textStyle="bold"
-                android:layout_marginTop="8dp"/>
+                android:textSize="14sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:id="@+id/tvDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="—"/>
+                android:text="—"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingVertical="4dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Дата приёмки"
                 android:textStyle="bold"
-                android:layout_marginTop="8dp"/>
+                android:textSize="14sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:id="@+id/tvAcceptanceDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="—"/>
+                android:text="Ожидает подтверждения"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"
+                android:layout_marginTop="4dp"
+                android:background="@android:color/darker_gray"
+                android:textColor="@android:color/white" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Контрагент"
                 android:textStyle="bold"
-                android:layout_marginTop="8dp"/>
+                android:textSize="14sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:id="@+id/tvContractor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="—"/>
+                android:text="—"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingVertical="4dp" />
 
         </LinearLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
     <!-- ===== СПИСОК ТОВАРОВ ===== -->
@@ -83,11 +101,11 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingBottom="120dp"
+        android:paddingBottom="180dp"
+        app:layout_constraintTop_toBottomOf="@id/cardHeader"
         app:layout_constraintBottom_toTopOf="@id/cardSummary"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cardHeader" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- ===== ИТОГИ (фиксированный низ) ===== -->
     <com.google.android.material.card.MaterialCardView
@@ -106,34 +124,103 @@
             android:orientation="vertical"
             android:padding="12dp">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Итоги"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal"
+                android:weightSum="3">
 
-                <TextView
-                    android:id="@+id/tvTotalItems"
+                <!-- Позиции -->
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Позиций: 0"
-                    android:textStyle="bold"/>
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="#F57C00">
 
-                <TextView
-                    android:id="@+id/tvTotalQty"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Позиции"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/tvTotalItems"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textStyle="bold"
+                        android:textSize="26sp"
+                        android:textColor="@android:color/white" />
+                </LinearLayout>
+
+                <!-- Всего -->
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Всего: 0"/>
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="#1976D2">
 
-                <TextView
-                    android:id="@+id/tvTotalDefect"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Всего"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/tvTotalQty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="0 шт."
+                        android:textStyle="bold"
+                        android:textSize="26sp"
+                        android:textColor="@android:color/white" />
+                </LinearLayout>
+
+                <!-- Брак -->
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="end"
-                    android:text="Брак: 0"
-                    android:textColor="@android:color/holo_red_dark"/>
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:background="#2E7D32">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Брак"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/tvTotalDefect"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="0 шт."
+                        android:textStyle="bold"
+                        android:textSize="26sp"
+                        android:textColor="@android:color/white" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -142,11 +229,11 @@
                 android:layout_height="wrap_content"
                 android:text="Подтвердить возврат"
                 android:layout_marginTop="8dp"/>
-        </LinearLayout>
 
+        </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- ===== FAB ===== -->
+    <!-- ===== FAB: Добавить товар ===== -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddProduct"
         android:layout_width="wrap_content"

@@ -34,6 +34,7 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     private lateinit var tvAcceptanceDate: MaterialTextView // Дата приёмки (НОВОЕ)
 
     private lateinit var btnConfirm: MaterialButton
+    private lateinit var fabAddProduct: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -46,6 +47,7 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvInvoice = findViewById(R.id.tvInvoice)
         tvDate = findViewById(R.id.tvDate)
         tvContractor = findViewById(R.id.tvContractor)
+        fabAddProduct = findViewById(R.id.fabAddProduct)
 
         // НОВОЕ: TextView для даты приёмки
         // ⚠️ В layout должен появиться MaterialTextView с id tvAcceptanceDate
@@ -139,9 +141,9 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
 
     private fun updateSummary() {
         val list = doc.products
-        tvTotalItems.text = "Позиций: ${list.size}"
-        tvTotalQty.text = "Всего: ${list.sumOf { it.quantity }}"
-        tvTotalDefect.text = "Брак: ${list.sumOf { it.defect }}"
+        tvTotalItems.text = list.size.toString()
+        tvTotalQty.text = "${list.sumOf { it.quantity }} шт."
+        tvTotalDefect.text = "${list.sumOf { it.defect }} шт."
     }
 
     private fun updateConfirmButtonState() {
@@ -188,7 +190,7 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvInvoice.text = doc.invoice
         tvDate.text = doc.ttnDate
         tvContractor.text = doc.contractor
-        tvAcceptanceDate?.text = doc.acceptanceDate ?: "—"
+        tvAcceptanceDate.text = doc.acceptanceDate ?: "Ожидает подтверждения"
 
         updateSummary()
 
