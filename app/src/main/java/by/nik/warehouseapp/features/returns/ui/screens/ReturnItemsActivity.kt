@@ -89,6 +89,10 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         updateSummary()
         updateConfirmButtonState()
         updateActionState()
+
+        doc = repo.getById(doc.id) ?: return
+        adapter.update(doc.products)
+        updateSummary()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

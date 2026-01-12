@@ -24,12 +24,11 @@ class ReturnListActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.rcReturns)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        adapter = ReturnListAdapter(repo.getAll()) { returnDoc ->
-            startActivity(Intent(this, ReturnItemsActivity::class.java).apply {
-                putExtra("returnId", returnDoc.id)
-            })
+        adapter = ReturnListAdapter(mutableListOf()) { doc ->
+            openReturn(doc.id)
         }
         recyclerView.adapter = adapter
+
 
         findViewById<FloatingActionButton>(R.id.fabAddReturn).setOnClickListener {
             startActivity(Intent(this, ReturnCreateActivity::class.java))
@@ -38,6 +37,14 @@ class ReturnListActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        adapter.notifyDataSetChanged()
+        adapter.update(repo.getAll())
     }
+
+    private fun openReturn(returnId: Long) {
+        val intent = Intent(this, ReturnItemsActivity::class.java)
+        intent.putExtra("returnId", returnId)
+        startActivity(intent)
+    }
+
+
 }

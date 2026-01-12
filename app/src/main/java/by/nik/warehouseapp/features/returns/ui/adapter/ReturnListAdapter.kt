@@ -9,7 +9,7 @@ import by.nik.warehouseapp.R
 import by.nik.warehouseapp.features.returns.model.ReturnDocument
 
 class ReturnListAdapter(
-    private val items: List<ReturnDocument>,
+    private val items: MutableList<ReturnDocument>,
     private val onClick: (ReturnDocument) -> Unit
 ) : RecyclerView.Adapter<ReturnListAdapter.ViewHolder>() {
 
@@ -38,5 +38,11 @@ class ReturnListAdapter(
     }
 
     override fun getItemCount() = items.size
+
+    fun update(newList: List<ReturnDocument>) {
+        items.clear()
+        items.addAll(newList)
+        notifyDataSetChanged()
+    }
 
 }

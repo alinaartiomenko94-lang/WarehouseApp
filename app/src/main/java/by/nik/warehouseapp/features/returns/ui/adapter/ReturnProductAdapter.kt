@@ -63,6 +63,13 @@ class ReturnProductAdapter(
         notifyItemRemoved(position)
     }
 
+    fun update(newList: List<ReturnProduct>) {
+        items.clear()
+        items.addAll(newList)
+        notifyDataSetChanged()
+    }
+
+
     interface OnProductClickListener {
         fun onProductClick(product: ReturnProduct, position: Int)
         fun onProductDelete(product: ReturnProduct, position: Int)
