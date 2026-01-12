@@ -78,6 +78,26 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="Статус"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="В РАБОТЕ"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"
+                android:layout_marginTop="4dp"
+                android:background="@android:color/darker_gray"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:text="Контрагент"
                 android:textStyle="bold"
                 android:textSize="14sp"
@@ -196,6 +216,7 @@
 
                 <!-- Брак -->
                 <LinearLayout
+                    android:id="@+id/panelDefect"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -224,6 +245,13 @@
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddProduct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Добавить товар"
+                android:layout_marginTop="8dp" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnConfirm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -234,13 +262,13 @@
     </com.google.android.material.card.MaterialCardView>
 
     <!-- ===== FAB: Добавить товар ===== -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddProduct"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:srcCompat="@drawable/ic_add"
-        app:layout_constraintBottom_toTopOf="@id/cardSummary"
-        app:layout_constraintEnd_toEndOf="parent"/>
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/fabAddProduct"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="16dp"-->
+<!--        app:srcCompat="@drawable/ic_add"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/cardSummary"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"/>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

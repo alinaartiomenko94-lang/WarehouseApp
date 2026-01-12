@@ -10,7 +10,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WarehouseApp">
+        android:theme="@style/Theme.WarehouseApp"
+        android:name=".WarehouseApp">
         <activity
             android:name=".features.returns.ui.screens.ReturnListActivity"
             android:exported="true">

@@ -11,6 +11,7 @@ import by.nik.warehouseapp.R
 import by.nik.warehouseapp.core.data.RepositoryProvider
 import by.nik.warehouseapp.features.returns.model.ReturnDocument
 import by.nik.warehouseapp.features.returns.model.ReturnProduct
+import by.nik.warehouseapp.features.returns.model.ReturnStatus
 import by.nik.warehouseapp.features.returns.ui.adapter.ReturnProductAdapter
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -34,7 +35,10 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     private lateinit var tvAcceptanceDate: MaterialTextView // Дата приёмки (НОВОЕ)
 
     private lateinit var btnConfirm: MaterialButton
-    private lateinit var fabAddProduct: FloatingActionButton
+    //private lateinit var fabAddProduct: FloatingActionButton
+    private lateinit var btnAddProduct: MaterialButton
+    private lateinit var tvStatus: MaterialTextView
+    private lateinit var panelDefect: android.widget.LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -47,7 +51,15 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvInvoice = findViewById(R.id.tvInvoice)
         tvDate = findViewById(R.id.tvDate)
         tvContractor = findViewById(R.id.tvContractor)
-        fabAddProduct = findViewById(R.id.fabAddProduct)
+
+        btnAddProduct = findViewById(R.id.btnAddProduct)
+        btnAddProduct.setOnClickListener {
+            startActivityForResult(
+                Intent(this, AddProductActivity::class.java),
+                ADD_PRODUCT_REQUEST
+            )
+        }
+        //fabAddProduct = findViewById(R.id.fabAddProduct)
 
         // НОВОЕ: TextView для даты приёмки
         // ⚠️ В layout должен появиться MaterialTextView с id tvAcceptanceDate
@@ -56,6 +68,7 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvTotalItems = findViewById(R.id.tvTotalItems)
         tvTotalQty = findViewById(R.id.tvTotalQty)
         tvTotalDefect = findViewById(R.id.tvTotalDefect)
+        tvStatus = findViewById(R.id.tvStatus)
 
         val recyclerView = findViewById<RecyclerView>(R.id.rcProducts)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -63,9 +76,9 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         adapter = ReturnProductAdapter(doc.products, this)
         recyclerView.adapter = adapter
 
-        findViewById<FloatingActionButton>(R.id.fabAddProduct).setOnClickListener {
-            startActivityForResult(Intent(this, AddProductActivity::class.java), ADD_PRODUCT_REQUEST)
-        }
+//        fabAddProduct.setOnClickListener {
+//            startActivityForResult(Intent(this, AddProductActivity::class.java), ADD_PRODUCT_REQUEST)
+//        }
 
         btnConfirm = findViewById(R.id.btnConfirm)
         btnConfirm.setOnClickListener {
@@ -75,6 +88,7 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         renderHeader()
         updateSummary()
         updateConfirmButtonState()
+        updateActionState()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -104,6 +118,11 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     }
 
     override fun onProductClick(product: ReturnProduct, position: Int) {
+        if (isAccepted()) {
+            Toast.makeText(this, "Возврат уже подтверждён", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val intent = Intent(this, AddProductActivity::class.java).apply {
             putExtra("code", product.code)
             putExtra("qty", product.quantity.toString())
@@ -114,6 +133,11 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     }
 
     override fun onProductDelete(product: ReturnProduct, position: Int) {
+        if (isAccepted()) {
+            Toast.makeText(this, "Возврат уже подтверждён", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         MaterialAlertDialogBuilder(this)
             .setTitle("Удалить товар")
             .setMessage("Удалить ${product.code}?")
@@ -128,12 +152,20 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
     }
 
     private fun renderHeader() {
+        val accepted = doc.status == ReturnStatus.ACCEPTED
         // Обновляем doc из репозитория на всякий случай (после confirmReturn)
         doc = repo.getById(doc.id) ?: return
 
         tvInvoice.text = doc.invoice
         tvDate.text = doc.ttnDate
         tvContractor.text = doc.contractor
+        tvStatus.text = if(accepted) "ПОДТВЕРЖДЁН" else "В РАБОТЕ"
+        tvStatus.setBackgroundColor(
+            if (accepted) android.graphics.Color.parseColor("#2E7D32")
+            else android.graphics.Color.parseColor("#616161")
+        )
+
+        panelDefect = findViewById(R.id.panelDefect)
 
         // Дата приёмки появляется только после подтверждения
         tvAcceptanceDate.text = doc.acceptanceDate ?: "—"
@@ -144,6 +176,12 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvTotalItems.text = list.size.toString()
         tvTotalQty.text = "${list.sumOf { it.quantity }} шт."
         tvTotalDefect.text = "${list.sumOf { it.defect }} шт."
+
+        val defectSum = list.sumOf { it.defect }
+        panelDefect.setBackgroundColor(
+            if (defectSum > 0) android.graphics.Color.parseColor("#C62828")
+            else android.graphics.Color.parseColor("#2E7D32")
+        )
     }
 
     private fun updateConfirmButtonState() {
@@ -192,9 +230,24 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvContractor.text = doc.contractor
         tvAcceptanceDate.text = doc.acceptanceDate ?: "Ожидает подтверждения"
 
+        renderHeader()
         updateSummary()
+        updateActionState()
 
         Toast.makeText(this, "Возврат подтверждён (локально)", Toast.LENGTH_LONG).show()
+    }
+
+    private fun isAccepted() : Boolean {
+        return doc.status == ReturnStatus.ACCEPTED
+    }
+
+    private fun updateActionState() {
+        // Подтвердить можно только если есть товары и документ не подтверждён
+        btnConfirm.isEnabled = doc.products.isNotEmpty() && !isAccepted()
+
+        // После подтверждения запрещаем добавление/редактирование
+        btnAddProduct.isEnabled = !isAccepted()
+        btnAddProduct.alpha = if (btnAddProduct.isEnabled) 1f else 0.35f
     }
 
 }
