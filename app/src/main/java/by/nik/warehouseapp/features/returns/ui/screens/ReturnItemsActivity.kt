@@ -73,8 +73,10 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         val recyclerView = findViewById<RecyclerView>(R.id.rcProducts)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        adapter = ReturnProductAdapter(doc.products, this)
+        adapter = ReturnProductAdapter(mutableListOf(), this)
         recyclerView.adapter = adapter
+        adapter.setItems(doc.products)
+
 
 //        fabAddProduct.setOnClickListener {
 //            startActivityForResult(Intent(this, AddProductActivity::class.java), ADD_PRODUCT_REQUEST)
@@ -110,16 +112,19 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
 
             if (position >= 0) {
                 repo.updateProduct(doc.id, position, product)
-                adapter.notifyItemChanged(position)
             } else {
                 repo.addProduct(doc.id, product)
-                adapter.notifyItemInserted(doc.products.size - 1)
             }
+
+            // ✅ ключевой момент: перечитать документ и обновить адаптер
+            doc = repo.getById(doc.id) ?: return
+            adapter.setItems(doc.products)
 
             updateSummary()
             updateConfirmButtonState()
         }
     }
+
 
     override fun onProductClick(product: ReturnProduct, position: Int) {
         if (isAccepted()) {
@@ -147,7 +152,13 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
             .setMessage("Удалить ${product.code}?")
             .setPositiveButton("Удалить") { _, _ ->
                 repo.deleteProduct(doc.id, position)
-                adapter.notifyItemRemoved(position)
+
+                doc = repo.getById(doc.id) ?: return
+                adapter.setItems(doc.products)
+
+                updateSummary()
+                updateConfirmButtonState()
+
                 updateSummary()
                 updateConfirmButtonState()
             }

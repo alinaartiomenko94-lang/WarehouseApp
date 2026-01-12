@@ -69,6 +69,11 @@ class ReturnProductAdapter(
         notifyDataSetChanged()
     }
 
+    fun setItems(newItems: List<ReturnProduct>) {
+        items.clear()
+        items.addAll(newItems)
+        notifyDataSetChanged()
+    }
 
     interface OnProductClickListener {
         fun onProductClick(product: ReturnProduct, position: Int)
