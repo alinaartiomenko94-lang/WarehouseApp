@@ -153,23 +153,27 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
             .setPositiveButton("Удалить") { _, _ ->
                 repo.deleteProduct(doc.id, position)
 
-                doc = repo.getById(doc.id) ?: return
+                val updated = repo.getById(doc.id)
+                if (updated == null) {
+                    Toast.makeText(this, "Документ не найден", Toast.LENGTH_SHORT).show()
+                    finish()
+                    return@setPositiveButton
+                }
+
+                doc = updated
                 adapter.setItems(doc.products)
 
                 updateSummary()
                 updateConfirmButtonState()
-
-                updateSummary()
-                updateConfirmButtonState()
+                updateActionState()
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
 
     private fun renderHeader() {
-        val accepted = doc.status == ReturnStatus.ACCEPTED
-        // Обновляем doc из репозитория на всякий случай (после confirmReturn)
         doc = repo.getById(doc.id) ?: return
+        val accepted = doc.status == ReturnStatus.ACCEPTED
 
         tvInvoice.text = doc.invoice
         tvDate.text = doc.ttnDate
