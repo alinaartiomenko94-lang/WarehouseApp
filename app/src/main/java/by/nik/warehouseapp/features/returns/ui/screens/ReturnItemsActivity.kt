@@ -14,30 +14,30 @@ import by.nik.warehouseapp.features.returns.model.ReturnProduct
 import by.nik.warehouseapp.features.returns.model.ReturnStatus
 import by.nik.warehouseapp.features.returns.ui.adapter.ReturnProductAdapter
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textview.MaterialTextView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductClickListener {
 
-    private val ADD_PRODUCT_REQUEST = 100
-    private lateinit var adapter: ReturnProductAdapter
-    private val repo = RepositoryProvider.returnRepository
+    private val repo by lazy { RepositoryProvider.returnRepository }
+
+    private var returnId: Long = -1L
     private lateinit var doc: ReturnDocument
+
+    private lateinit var tvInvoice: MaterialTextView
+    private lateinit var tvDate: MaterialTextView
+    private lateinit var tvContractor: MaterialTextView
+    private lateinit var tvAcceptanceDate: MaterialTextView
 
     private lateinit var tvTotalItems: MaterialTextView
     private lateinit var tvTotalQty: MaterialTextView
     private lateinit var tvTotalDefect: MaterialTextView
-
-    private lateinit var tvInvoice: MaterialTextView
-    private lateinit var tvDate: MaterialTextView           // Дата ТТН
-    private lateinit var tvContractor: MaterialTextView
-    private lateinit var tvAcceptanceDate: MaterialTextView // Дата приёмки (НОВОЕ)
-
-    private lateinit var btnConfirm: MaterialButton
-    //private lateinit var fabAddProduct: FloatingActionButton
-    private lateinit var btnAddProduct: MaterialButton
     private lateinit var tvStatus: MaterialTextView
+
+    private lateinit var btnAddProduct: MaterialButton
+    private lateinit var btnConfirm: MaterialButton
+
+    private lateinit var adapter: ReturnProductAdapter
+
     private lateinit var panelDefect: android.widget.LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,24 +45,34 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_return_items)
 
-        val returnId = intent.getLongExtra("returnId", -1L)
+        returnId = intent.getLongExtra("returnId", -1L)
+        if (returnId <= 0) {
+            Toast.makeText(this, "Ошибка: не передан returnId", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+
+        // Загружаем документ
         doc = repo.getById(returnId) ?: run { finish(); return }
 
+        bindViews()
+        setupRecycler()
+        setupActions()
+
+        renderDoc()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // ✅ КЛЮЧЕВО: после AddProductActivity (который не закрывается “по результату”)
+        // мы обновляем документ и список тут
+        refreshDoc()
+    }
+
+    private fun bindViews() {
         tvInvoice = findViewById(R.id.tvInvoice)
         tvDate = findViewById(R.id.tvDate)
         tvContractor = findViewById(R.id.tvContractor)
-
-        btnAddProduct = findViewById(R.id.btnAddProduct)
-        btnAddProduct.setOnClickListener {
-            startActivityForResult(
-                Intent(this, AddProductActivity::class.java),
-                ADD_PRODUCT_REQUEST
-            )
-        }
-        //fabAddProduct = findViewById(R.id.fabAddProduct)
-
-        // НОВОЕ: TextView для даты приёмки
-        // ⚠️ В layout должен появиться MaterialTextView с id tvAcceptanceDate
         tvAcceptanceDate = findViewById(R.id.tvAcceptanceDate)
 
         tvTotalItems = findViewById(R.id.tvTotalItems)
@@ -70,61 +80,94 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
         tvTotalDefect = findViewById(R.id.tvTotalDefect)
         tvStatus = findViewById(R.id.tvStatus)
 
+        btnAddProduct = findViewById(R.id.btnAddProduct)
+        btnConfirm = findViewById(R.id.btnConfirm)
+
+        panelDefect = findViewById(R.id.panelDefect)
+    }
+
+    private fun setupRecycler() {
         val recyclerView = findViewById<RecyclerView>(R.id.rcProducts)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         adapter = ReturnProductAdapter(mutableListOf(), this)
         recyclerView.adapter = adapter
-        adapter.setItems(doc.products)
-
-
-//        fabAddProduct.setOnClickListener {
-//            startActivityForResult(Intent(this, AddProductActivity::class.java), ADD_PRODUCT_REQUEST)
-//        }
-
-        btnConfirm = findViewById(R.id.btnConfirm)
-        btnConfirm.setOnClickListener {
-            showConfirmDialog()
-        }
-
-        renderHeader()
-        updateSummary()
-        updateConfirmButtonState()
-        updateActionState()
-
-        doc = repo.getById(doc.id) ?: return
-        adapter.update(doc.products)
-        updateSummary()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == ADD_PRODUCT_REQUEST && resultCode == RESULT_OK) {
-            val d = data ?: return
-
-            val code = d.getStringExtra("code") ?: return
-            val qty = d.getStringExtra("qty")?.toIntOrNull() ?: return
-            val defect = d.getStringExtra("defect")?.toIntOrNull() ?: 0
-            val position = d.getIntExtra("position", -1)
-
-            val product = ReturnProduct(code = code, quantity = qty, defect = defect)
-
-            if (position >= 0) {
-                repo.updateProduct(doc.id, position, product)
-            } else {
-                repo.addProduct(doc.id, product)
+    private fun setupActions() {
+        btnAddProduct.setOnClickListener {
+            if (isAccepted()) {
+                Toast.makeText(this, "Возврат уже подтверждён", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
-            // ✅ ключевой момент: перечитать документ и обновить адаптер
-            doc = repo.getById(doc.id) ?: return
-            adapter.setItems(doc.products)
+            // ✅ Запускаем AddProductActivity БЕЗ startActivityForResult
+            // и ОБЯЗАТЕЛЬНО передаём returnId
+            val intent = Intent(this, AddProductActivity::class.java).apply {
+                putExtra(AddProductActivity.EXTRA_RETURN_ID, doc.id)
+            }
+            startActivity(intent)
+        }
 
-            updateSummary()
-            updateConfirmButtonState()
+        btnConfirm.setOnClickListener {
+            if (isAccepted()) return@setOnClickListener
+
+            if (doc.products.isEmpty()) {
+                Toast.makeText(this, "Нельзя подтвердить: нет товаров", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            repo.confirmReturn(doc.id)
+            refreshDoc()
         }
     }
 
+    private fun refreshDoc() {
+        doc = repo.getById(returnId) ?: return
+        renderDoc()
+    }
+
+    private fun renderDoc() {
+        tvInvoice.text = doc.invoice
+        tvDate.text = doc.ttnDate
+        tvContractor.text = doc.contractor
+
+        tvAcceptanceDate.text = doc.acceptanceDate ?: "—"
+
+        tvStatus.text = doc.status.title
+
+        adapter.setItems(doc.products)
+
+        updateSummary()
+        updateActionState()
+    }
+
+    private fun updateSummary() {
+        val list = doc.products
+        tvTotalItems.text = list.size.toString()
+        tvTotalQty.text = list.sumOf { it.quantity }.toString()
+        tvTotalDefect.text = list.sumOf { it.defect }.toString()
+
+        // визуальная подсказка по браку (как у тебя было)
+        val defectSum = list.sumOf { it.defect }
+        panelDefect.setBackgroundColor(
+            if (defectSum > 0) android.graphics.Color.parseColor("#C62828")
+            else android.graphics.Color.parseColor("#2E7D32")
+        )
+    }
+
+    private fun isAccepted(): Boolean = doc.status == ReturnStatus.ACCEPTED
+
+    private fun updateActionState() {
+        btnConfirm.isEnabled = doc.products.isNotEmpty() && !isAccepted()
+
+        btnAddProduct.isEnabled = !isAccepted()
+        btnAddProduct.alpha = if (btnAddProduct.isEnabled) 1f else 0.35f
+    }
+
+    // ============================================================
+    // Adapter callbacks
+    // ============================================================
 
     override fun onProductClick(product: ReturnProduct, position: Int) {
         if (isAccepted()) {
@@ -132,13 +175,9 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
             return
         }
 
-        val intent = Intent(this, AddProductActivity::class.java).apply {
-            putExtra("code", product.code)
-            putExtra("qty", product.quantity.toString())
-            putExtra("defect", product.defect.toString())
-            putExtra("position", position)
-        }
-        startActivityForResult(intent, ADD_PRODUCT_REQUEST)
+        // Пока оставим так: редактирование можно сделать следующим шагом.
+        // Сейчас главный поток — сканирование.
+        Toast.makeText(this, "Редактирование добавим следующим шагом", Toast.LENGTH_SHORT).show()
     }
 
     override fun onProductDelete(product: ReturnProduct, position: Int) {
@@ -147,126 +186,7 @@ class ReturnItemsActivity : AppCompatActivity(), ReturnProductAdapter.OnProductC
             return
         }
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Удалить товар")
-            .setMessage("Удалить ${product.code}?")
-            .setPositiveButton("Удалить") { _, _ ->
-                repo.deleteProduct(doc.id, position)
-
-                val updated = repo.getById(doc.id)
-                if (updated == null) {
-                    Toast.makeText(this, "Документ не найден", Toast.LENGTH_SHORT).show()
-                    finish()
-                    return@setPositiveButton
-                }
-
-                doc = updated
-                adapter.setItems(doc.products)
-
-                updateSummary()
-                updateConfirmButtonState()
-                updateActionState()
-            }
-            .setNegativeButton("Отмена", null)
-            .show()
+        repo.deleteProduct(doc.id, position)
+        refreshDoc()
     }
-
-    private fun renderHeader() {
-        doc = repo.getById(doc.id) ?: return
-        val accepted = doc.status == ReturnStatus.ACCEPTED
-
-        tvInvoice.text = doc.invoice
-        tvDate.text = doc.ttnDate
-        tvContractor.text = doc.contractor
-        tvStatus.text = if(accepted) "ПОДТВЕРЖДЁН" else "В РАБОТЕ"
-        tvStatus.setBackgroundColor(
-            if (accepted) android.graphics.Color.parseColor("#2E7D32")
-            else android.graphics.Color.parseColor("#616161")
-        )
-
-        panelDefect = findViewById(R.id.panelDefect)
-
-        // Дата приёмки появляется только после подтверждения
-        tvAcceptanceDate.text = doc.acceptanceDate ?: "—"
-    }
-
-    private fun updateSummary() {
-        val list = doc.products
-        tvTotalItems.text = list.size.toString()
-        tvTotalQty.text = "${list.sumOf { it.quantity }} шт."
-        tvTotalDefect.text = "${list.sumOf { it.defect }} шт."
-
-        val defectSum = list.sumOf { it.defect }
-        panelDefect.setBackgroundColor(
-            if (defectSum > 0) android.graphics.Color.parseColor("#C62828")
-            else android.graphics.Color.parseColor("#2E7D32")
-        )
-    }
-
-    private fun updateConfirmButtonState() {
-        // Кнопка активна только если есть товары
-        btnConfirm.isEnabled = doc.products.isNotEmpty()
-    }
-
-    private fun showConfirmDialog() {
-        if (doc.products.isEmpty()) {
-            Toast.makeText(this, "Список товаров пуст", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val totalItems = doc.products.size
-        val totalQty = doc.products.sumOf { it.quantity }
-        val totalDefect = doc.products.sumOf { it.defect }
-
-        val message = """
-            ТТН: ${doc.invoice}
-            Дата ТТН: ${doc.ttnDate}
-            
-            Позиций: $totalItems
-            Всего: $totalQty
-            Брак: $totalDefect
-            
-            Подтвердить возврат?
-        """.trimIndent()
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Подтверждение возврата")
-            .setMessage(message)
-            .setNegativeButton("Отмена", null)
-            .setPositiveButton("Подтвердить") { _, _ ->
-                confirmReturn()
-            }
-            .show()
-    }
-
-    private fun confirmReturn() {
-        repo.confirmReturn(doc.id)          // тут ставится acceptanceDate и статус
-        doc = repo.getById(doc.id) ?: doc   // перечитать
-
-        // обновить UI
-        tvInvoice.text = doc.invoice
-        tvDate.text = doc.ttnDate
-        tvContractor.text = doc.contractor
-        tvAcceptanceDate.text = doc.acceptanceDate ?: "Ожидает подтверждения"
-
-        renderHeader()
-        updateSummary()
-        updateActionState()
-
-        Toast.makeText(this, "Возврат подтверждён (локально)", Toast.LENGTH_LONG).show()
-    }
-
-    private fun isAccepted() : Boolean {
-        return doc.status == ReturnStatus.ACCEPTED
-    }
-
-    private fun updateActionState() {
-        // Подтвердить можно только если есть товары и документ не подтверждён
-        btnConfirm.isEnabled = doc.products.isNotEmpty() && !isAccepted()
-
-        // После подтверждения запрещаем добавление/редактирование
-        btnAddProduct.isEnabled = !isAccepted()
-        btnAddProduct.alpha = if (btnAddProduct.isEnabled) 1f else 0.35f
-    }
-
 }

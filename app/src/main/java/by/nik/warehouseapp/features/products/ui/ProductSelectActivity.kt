@@ -1,52 +1,47 @@
 package by.nik.warehouseapp.features.products.ui
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import by.nik.warehouseapp.R
-import by.nik.warehouseapp.core.data.product.InMemoryProductRepository
+import by.nik.warehouseapp.core.data.RepositoryProvider
 import by.nik.warehouseapp.features.products.ui.adapter.ProductSelectAdapter
-import com.google.android.material.textfield.TextInputEditText
 
 class ProductSelectActivity : AppCompatActivity() {
 
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: ProductSelectAdapter
+
+    private val productRepository by lazy {
+        RepositoryProvider.productRepository
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_product_select)
 
-        val etQuery = findViewById<TextInputEditText>(R.id.etQuery)
-        val rv = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvProducts)
-        rv.layoutManager = LinearLayoutManager(this)
+        recyclerView = findViewById(R.id.rvProducts)
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val adapter = ProductSelectAdapter(mutableListOf()) { p ->
-            val data = Intent().apply {
-                putExtra("productId", p.id)
-                putExtra("nn", p.nn)
-                putExtra("name", p.name)
-                putExtra("article", p.article)
-                putExtra("barcode", p.barcode)
-                putExtra("imageRes", p.imageRes)
+        val query = intent.getStringExtra(EXTRA_QUERY).orEmpty()
+        val products = productRepository.search(query)
+
+        adapter = ProductSelectAdapter(products) { product ->
+            val result = Intent().apply {
+                putExtra(EXTRA_PRODUCT_ID, product.id)
             }
-            setResult(RESULT_OK, data)
+            setResult(Activity.RESULT_OK, result)
             finish()
         }
-        rv.adapter = adapter
 
-        val initial = intent.getStringExtra("query").orEmpty()
-        etQuery.setText(initial)
+        recyclerView.adapter = adapter
+    }
 
-        fun refresh(q: String) {
-            adapter.update(InMemoryProductRepository.findByAnyCode(q))
-        }
-
-        refresh(initial)
-
-        etQuery.setOnEditorActionListener { v, _, _ ->
-            refresh(v.text?.toString().orEmpty())
-            true
-        }
+    companion object {
+        const val EXTRA_QUERY = "extra_query"
+        const val EXTRA_PRODUCT_ID = "extra_product_id"
     }
 }

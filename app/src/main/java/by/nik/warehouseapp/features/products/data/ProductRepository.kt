@@ -19,6 +19,19 @@ class ProductRepository(
         return dao.getById(id)
     }
 
+    fun isEmpty(): Boolean {
+        return dao.count() == 0
+    }
+
+    /**
+     * Временная инициализация тестового справочника.
+     * Позже будет заменено загрузкой из 1С / синхронизацией.
+     */
+    fun ensureSeeded() {
+        if (!isEmpty()) return
+        seedTestData()
+    }
+
     fun seedTestData() {
         dao.insertAll(
             listOf(

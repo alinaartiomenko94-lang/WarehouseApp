@@ -1,11 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
     <!-- Код / штрихкод -->
     <com.google.android.material.textfield.TextInputLayout
@@ -88,7 +92,7 @@
         android:layout_height="wrap_content"
         android:hint="Количество"
         android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@id/tilCode"
+        app:layout_constraintTop_toBottomOf="@id/cardProduct"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -135,15 +139,27 @@
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <!-- Кнопка Скан: ВСЕГДА над btnAdd, справа -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fabScan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Скан"
-        android:contentDescription="Сканировать"
-        app:icon="@drawable/ic_scan"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintBottom_toTopOf="@id/btnAdd"
-    android:layout_marginBottom="12dp"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFind"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:text="Найти товар"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnScan"
+            app:layout_constraintBottom_toTopOf="@id/btnAdd"
+            android:layout_marginBottom="12dp"
+            android:layout_marginEnd="8dp"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnScan"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:text="Сканировать"
+            app:layout_constraintStart_toEndOf="@id/btnFind"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/btnAdd"
+            android:layout_marginBottom="12dp"/>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
