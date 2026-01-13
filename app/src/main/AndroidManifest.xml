@@ -33,6 +33,11 @@
             android:name=".features.returns.ui.screens.ReturnCreateActivity"
             android:exported="false" />
 
+        <activity android:name=".features.products.ui.ProductCardActivity" />
+
+        <activity android:name=".features.products.ui.ProductSelectActivity" />
+
+
     </application>
 
 </manifest>

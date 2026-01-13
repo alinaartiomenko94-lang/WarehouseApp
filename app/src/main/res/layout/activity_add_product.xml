@@ -27,6 +27,39 @@
             android:maxLines="1"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardProductInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/tvProductName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Наименование"
+                android:textStyle="bold"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvProductMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Код: — | Арт: — | ШК: —"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+
     <!-- Количество -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilQty"

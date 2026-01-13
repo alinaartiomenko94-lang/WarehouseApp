@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardProduct"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardElevation="6dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/ivProduct"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:scaleType="centerCrop"
+                android:contentDescription="Product image"
+                android:src="@android:drawable/ic_menu_report_image" />
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Наименование"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="10dp" />
+
+            <!-- Плашки-строки как на ТСД -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Номенклатурный код"
+                    android:textStyle="bold"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tvNomCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:paddingVertical="4dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Артикул"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvArticle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:paddingVertical="4dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Штрихкод"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvBarcode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:padding="10dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@android:color/darker_gray"
+                    android:textColor="@android:color/white" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
