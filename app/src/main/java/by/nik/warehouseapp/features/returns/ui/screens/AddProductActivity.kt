@@ -219,11 +219,16 @@ class AddProductActivity : AppCompatActivity() {
 
         // Если пользователь руками меняет поле кода — сбрасываем выбранный товар,
         // чтобы не было ситуации "карточка от одного, код от другого".
-        etCode.addTextChangedListener {
-            tilCode.error = null
-            clearSelectedProductUi()
+        etCode.addTextChangedListener { text ->
             validate(showErrors = false)
+
+            val s = text?.toString().orEmpty().trim()
+            // типичный штрихкод: 8–14 символов
+            if (s.length >= 8) {
+                resolveProduct(s)
+            }
         }
+
 
         fun isEnter(event: KeyEvent?) =
             event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN
@@ -235,6 +240,18 @@ class AddProductActivity : AppCompatActivity() {
                 true
             } else false
         }
+
+        etCode.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER &&
+                event.action == KeyEvent.ACTION_DOWN
+            ) {
+                resolveProduct(etCode.text?.toString().orEmpty())
+                true
+            } else {
+                false
+            }
+        }
+
 
         etQty.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_NEXT || isEnter(event)) {
@@ -250,12 +267,15 @@ class AddProductActivity : AppCompatActivity() {
             } else false
         }
 
-        // Кнопка "Скан" — фокус в поле + очистка ошибки
         fabScan.setOnClickListener {
             tilCode.error = null
             etCode.requestFocus()
             etCode.setSelection(etCode.text?.length ?: 0)
+
+            // 🔴 ВАЖНО: запускаем поиск товара
+            resolveProduct(etCode.text?.toString().orEmpty())
         }
+
 
         btnAdd.setOnClickListener {
             if (!validate(showErrors = true)) return@setOnClickListener
