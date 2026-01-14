@@ -35,6 +35,17 @@ class ReturnListAdapter(
         holder.itemView.setOnClickListener {
             onClick(item)
         }
+
+        holder.btnToggleDetails.setOnClickListener {
+            val opened = holder.detailsContainer.visibility == View.VISIBLE
+            holder.detailsContainer.visibility = if (opened) View.GONE else View.VISIBLE
+        }
+
+        holder.btnViewList.setOnClickListener {
+            onOpenReturn(doc.id)
+        }
+
+
     }
 
     override fun getItemCount() = items.size
