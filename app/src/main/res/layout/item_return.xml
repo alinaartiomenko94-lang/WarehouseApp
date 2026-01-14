@@ -5,8 +5,7 @@
     android:id="@+id/cardReturn"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="12dp"
-    android:layout_marginVertical="8dp"
+    android:layout_marginBottom="10dp"
     app:cardCornerRadius="16dp"
     app:cardUseCompatPadding="true"
     app:cardElevation="2dp">
@@ -16,7 +15,7 @@
         android:layout_height="wrap_content"
         android:padding="14dp">
 
-        <!-- ===== Заголовок: №ТТН + Дата ТТН ===== -->
+        <!-- Заголовок: №ТТН + Дата ТТН -->
         <TextView
             android:id="@+id/tvTitleTtn"
             android:layout_width="0dp"
@@ -24,41 +23,27 @@
             android:text="№ 12345678 от 12.04.2024"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:maxLines="1"
+            android:ellipsize="end"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/ivMenu"
-            android:maxLines="1"
-            android:ellipsize="end"/>
-
-        <!-- Меню (три точки) -->
-        <ImageView
-            android:id="@+id/ivMenu"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:contentDescription="menu"
-            android:src="@android:drawable/ic_menu_more"
-            app:tint="?attr/colorOnSurfaceVariant"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- ===== Контрагент ===== -->
+        <!-- Контрагент -->
         <TextView
             android:id="@+id/tvCounterparty"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="ООО «Игрушкин»"
             android:textSize="15sp"
-            android:textStyle="normal"
-            android:textColor="?attr/colorOnSurface"
             android:layout_marginTop="6dp"
+            android:maxLines="1"
+            android:ellipsize="end"
             app:layout_constraintTop_toBottomOf="@id/tvTitleTtn"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:maxLines="1"
-            android:ellipsize="end"/>
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- ===== Плашки: Тип документа + Статус ===== -->
+        <!-- Плашки: Тип документа + Статус -->
         <LinearLayout
             android:id="@+id/rowChips"
             android:layout_width="0dp"
@@ -66,12 +51,11 @@
             android:layout_marginTop="10dp"
             android:orientation="horizontal"
             android:gravity="start"
-            android:baselineAligned="false"
             app:layout_constraintTop_toBottomOf="@id/tvCounterparty"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- Тип документа -->
+            <!-- Тип документа (пока текстом, позже свяжем с выбором при создании) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -114,7 +98,7 @@
 
         </LinearLayout>
 
-        <!-- ===== Строка действий (в одну линию): Показать детали | Просмотр списка ===== -->
+        <!-- Действия в одну строку -->
         <LinearLayout
             android:id="@+id/rowActions"
             android:layout_width="0dp"
@@ -126,7 +110,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- Показать детали -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnToggleDetails"
                 android:layout_width="0dp"
@@ -135,13 +118,9 @@
                 android:text="Показать детали"
                 android:textAllCaps="false"
                 android:textStyle="bold"
-                app:icon="@android:drawable/arrow_down_float"
-                app:iconGravity="textEnd"
-                app:iconPadding="6dp"
                 app:cornerRadius="12dp"
                 style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-            <!-- Просмотр списка -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewList"
                 android:layout_width="0dp"
@@ -151,14 +130,11 @@
                 android:text="Просмотр списка"
                 android:textAllCaps="false"
                 android:textStyle="bold"
-                app:icon="@android:drawable/ic_media_next"
-                app:iconGravity="textEnd"
-                app:iconPadding="6dp"
                 app:cornerRadius="12dp"
                 style="@style/Widget.Material3.Button"/>
         </LinearLayout>
 
-        <!-- ===== Раскрываемый блок деталей (по умолчанию скрыт) ===== -->
+        <!-- Раскрываемые детали -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/detailsContainer"
             android:layout_width="0dp"
@@ -183,25 +159,24 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Общее количество:"
-                        android:textSize="14sp"
                         android:textStyle="bold"
+                        android:textSize="14sp"
                         android:textColor="#0B3A66"/>
 
                     <TextView
                         android:id="@+id/tvTotalQty"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="124 шт."
-                        android:textSize="16sp"
+                        android:text="0 шт."
                         android:textStyle="bold"
+                        android:textSize="16sp"
                         android:textColor="#0B3A66"/>
                 </LinearLayout>
 
@@ -214,43 +189,43 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Кол-во брака:"
-                        android:textSize="14sp"
                         android:textStyle="bold"
+                        android:textSize="14sp"
                         android:textColor="#8A1F1F"/>
 
                     <TextView
                         android:id="@+id/tvDefectQty"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="4 шт."
-                        android:textSize="16sp"
+                        android:text="0 шт."
                         android:textStyle="bold"
+                        android:textSize="16sp"
                         android:textColor="#8A1F1F"/>
                 </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ===== Дата приёмки ===== -->
+        <!-- Дата приёмки -->
         <TextView
             android:id="@+id/tvAcceptanceDate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="Дата приёмки: 11.04.2024"
+            android:text="Дата приёмки: —"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textColor="#666666"
             app:layout_constraintTop_toBottomOf="@id/detailsContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </com.google.android.material.card.MaterialCardView>
